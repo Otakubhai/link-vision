@@ -1,11 +1,20 @@
-import pyrogram
+import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 import random
 from flask import Flask
 from threading import Thread
 from config import *
+import os
 
+# Configure logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# Initialize bot
 bot = Client(
     "Link_Vision",
     api_id=API_ID,
@@ -15,9 +24,11 @@ bot = Client(
 
 @bot.on_message(filters.private & filters.command("start"))
 async def start(client: Client, msg: Message):
+    logger.info(f"Received /start command from {msg.from_user.id}")
     text = "The Bot is Alive! This Bot was made by @Aakash1230"
     await msg.reply(text)
 
+# Flask app for health check
 flask_app = Flask('')
 
 @flask_app.route('/')
@@ -25,10 +36,12 @@ def home():
     return "Bot is running", 200
 
 def run_flask():
+    logger.info("Starting Flask server for health check.")
     flask_app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 
 @bot.on_message(filters.private & filters.command("anime"))
 async def anime(client: Client, msg: Message):
+    logger.info(f"Received /anime command from {msg.from_user.id}")
     text = "Which Format Do You Want To Use?!"
     btn = InlineKeyboardMarkup(
         [
@@ -43,6 +56,7 @@ async def anime(client: Client, msg: Message):
 @bot.on_callback_query()
 async def callback(client: Client, query: CallbackQuery):
     data = query.data
+    logger.info(f"Callback query received: {data} from {query.from_user.id}")
     ratings = random.randint(85, 100) 
     tt = ["Thick", "Bumsty", "M!LF", "Big B00bs", "B00bjob", "Bl@w Job", "Stockings", "Mini Bikini", "Step-Sis", "Step Mom", "Winter Surprise", "3sum", "G@ng Bang", "Waifu", "Cosplay", "Hard¢ore", "H@rdcor€", "$lut", "School", "School Girl", "Maid", "Romance", "Drama", "Story", "AV Debut", "Cheating", "Harassment", "Adultery", "Employee", "Hotel", "Adultery", "Creamp!e", "Old Women", "Older Women", "Glamorous", "Model", "BD$M", "Deep Thro@t", "Big A$$", "Huge Boombs", "Thick Women", "Thick Body", "Thick Thighs", "Preety Girl", "Shy Girl", "Beautiful Girl", "Innocent Girl", "Innocent", "Beautiful Women", "Shy Women", "Sensitive Girl", "Highschool", "Student", "Teacher", "Bikini", "Crop Top", "Shorts", "Forced Semx"]
     tag1 = random.choice(tt)
@@ -66,6 +80,7 @@ async def callback(client: Client, query: CallbackQuery):
 ╠ 🗃File Format : 480p, 720p, 1080p
 ╚═══════════════════════"""
         await query.edit_message_text(text, reply_markup=btn)
+        logger.info("XOXO callback processed successfully.")
     elif data == "otaku":
         text = f"""&lt;b&gt;💦 Stepmom Wants Cream Filling On Easter - Winter Tale 
 ┏━━━━━━━━━━━━━━━━━
@@ -76,11 +91,10 @@ async def callback(client: Client, query: CallbackQuery):
 ┗━━━━━━━━━━━━━━━━━
 &lt;blockquote&gt;📝 Tags : #Uncnsored, {tag1}, {tag2}, {tag3}, {tag4}&lt;/blockquote&gt;&lt;/b&gt;"""
         await query.edit_message_text(text, reply_markup=btn)
-
-
-
+        logger.info("Otaku callback processed successfully.")
 
 print("Alive!")
+logger.info("Bot started and running.")
 if __name__ == "__main__":
     Thread(target=run_flask).start()
     bot.run()
